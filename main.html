@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rocky Chen | Product Designer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles and variables */
+        :root {
+            --primary-color: #0099FF;
+            --background-dark: #0F1010;
+            --background-light: #1A1A1A;
+            --text-color: #DEDEDE;
+            --card-bg-light: rgba(255, 255, 255, 0.05);
+            --card-bg-dark: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --magnetic-multiplier: 0.15;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            cursor: none;
+            font-weight: 500;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* --- Background Fluid Simulation Canvas --- */
+        canvas#c {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- Custom Cursor --- */
+        .cursor-dot,
+        .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            will-change: transform;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            transition: transform 0.2s ease-out;
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary-color);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                        width 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        height 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        /* New CSS to prevent the default hand cursor on hover */
+        a, button, [data-magnetic] {
+            cursor: none !important;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        .header-container {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background-color: rgba(15, 16, 16, 0.5); 
+            border: 1px solid var(--border-color); 
+            border-radius: 20px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .logo h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-button {
+            background-color: transparent;
+            border: 1px solid rgba(34, 34, 34, 1);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #FFFFFF;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .header-button:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        header.scrolled .header-container {
+            background-color: rgba(15, 16, 16, 0.75);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .hero {
+            padding: 180px 0 100px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.6px;
+            color: var(--text-color);
+        }
+
+        .hero-emoji {
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            margin-left: 20px;
+            animation: rotateEmoji 5s infinite;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-top: 30px;
+            max-width: 800px;
+            color: var(--text-color);
+        }
+
+        .hero-subtitle .word {
+            display: inline-block;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1), opacity 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+
+        .instagram-handle {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        
+        .section {
+            padding: 100px 0;
+            opacity: 0; 
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            position: relative;
+            background-color: transparent;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .about-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: var(--card-bg-dark);
+            border-radius: 20px;
+            padding: 50px 30px;
+            width: 100%;
+            margin: 0 auto 50px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .about-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .about-text p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+        
+        .project-categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .category-button {
+            flex: 1;
+            max-width: 200px;
+            background-color: var(--card-bg-light);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .category-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-button.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+        }
+
+        .projects-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 80px;
+        }
+
+        .project-card {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            background-color: var(--card-bg-dark);
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease, max-height 0.5s ease-out, margin-bottom 0.5s ease-out, padding 0.5s ease-out;
+            opacity: 1;
+            transform: scale(1);
+            max-height: 1000px;
+            overflow: hidden;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+        
+        .project-card.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .project-card:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .project-image-container {
+            flex: 1;
+            max-width: 50%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .project-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .project-card:hover .project-image-container img {
+            transform: scale(1.05);
+        }
+
+        .project-details {
+            flex: 1;
+            max-width: 50%;
+            padding: 20px;
+        }
+        
+        .project-details h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #FFFFFF;
+        }
+        
+        .project-details p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .project-tag {
+            background-color: rgba(0, 153, 255, 0.1);
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .new-contact {
+            padding-top: 150px;
+            padding-bottom: 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background-color: transparent;
+        }
+
+        .new-contact-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .new-contact-content h2 {
+            font-size: clamp(3rem, 10vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+            text-transform: lowercase;
+        }
+
+        .new-contact-content p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0.8;
+            max-width: 500px;
+            margin: 0 auto 40px;
+            font-weight: 600;
+        }
+
+        .memoji-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+        }
+
+        .memoji {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        .contact-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 35px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            border: none;
+        }
+
+        .contact-button:hover {
+            background-color: #0088EE;
+        }
+
+        .social-links-footer {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 80px;
+        }
+
+        .social-links-footer a {
+            color: #FFFFFF;
+            font-size: 1.5rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-links-footer a:hover {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin-top: 20px;
+        }
+
+        @keyframes rotateEmoji {
+            0% { transform: rotate(-60deg); opacity: 0; }
+            20% { transform: rotate(0deg); opacity: 1; }
+            80% { transform: rotate(0deg); opacity: 1; }
+            100% { transform: rotate(60deg); opacity: 0; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @media (max-width: 900px) {
+            .project-card,
+            .project-card:nth-child(even) {
+                flex-direction: column;
+            }
+            
+            .project-image-container,
+            .project-details {
+                max-width: 100%;
+            }
+
+            .category-button {
+                flex: none;
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .header-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .hero {
+                padding: 150px 0 80px;
+            }
+            
+            .hero-line {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .hero-emoji {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+
+            .new-contact-content h2 {
+                font-size: clamp(2.5rem, 8vw, 4.5rem);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="c"></canvas>
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <h2>rocky chen</h2>
+                </div>
+                <div class="header-buttons">
+                    <a href="https://www.linkedin.com/in/rockyhchen/" class="header-button" target="_blank" data-magnetic>
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="mailto:rockyhchen@gmail.com" class="header-button" data-magnetic>
+                        <i class="far fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-line">
+                    <h1>i'm rocky</h1>
+                    <div class="hero-emoji">✌️</div>
+                </div>
+                <div class="hero-subtitle">
+                    <span class="word">product</span> <span class="word">designer</span> 
+                    <span class="word">unfolding</span> <span class="word">stories</span> 
+                    <span class="instagram-handle"><span class="word">@instagram</span></span> 
+                    <span class="word">through</span> <span class="word">prototypes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-card" data-magnetic>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80" alt="Rocky Chen">
+                </div>
+                <div class="about-text">
+                    <h3>A Glimpse into My World</h3>
+                    <p>I'm a product designer with a passion for creating intuitive and engaging user experiences. With a background in both design and development, I bridge the gap between aesthetics and functionality.</p>
+                    <p>My approach combines user-centered design principles with rapid prototyping to validate ideas and create products that people love to use.</p>
+                    <p>Currently focusing on design systems, interaction design, and exploring new ways to create immersive digital experiences.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="project-categories">
+                <button class="category-button active" data-category="all" data-magnetic>All</button>
+                <button class="category-button" data-category="ui-ux" data-magnetic>UI/UX</button>
+                <button class="category-button" data-category="development" data-magnetic>Development</button>
+                <button class="category-button" data-category="branding" data-magnetic>Branding</button>
+            </div>
+            <div class="projects-list" id="projects-list">
+                <div class="project-card" data-category="ui-ux development" data-magnetic>
+                    <div class="project-image-container">
+                        <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" alt="Travel App">
+                    </div>
+                    <div class="project-details">
+                        <h3>Travel Experience App</h3>
+                        <p>A mobile application designed to help travelers discover unique local experiences, manage their itineraries, and share their journey with a vibrant community.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">UI/UX</span>
+                            <span class="project-tag">Prototyping</span>
+                            <span class="project-tag">Mobile App</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card" data-category="ui-ux branding" data-magnetic>
+                    <div class="project-image-container">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Dashboard">
+                    </div>
+                    <div class="project-details">
+                        <h3>Data Analytics Dashboard</h3>
+                        <p>A comprehensive dashboard for visualizing complex business metrics. The goal was to transform raw data into actionable insights with a clean, intuitive interface.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Dashboard</span>
+                            <span class="project-tag">Data Viz</span>
+                            <span class="project-tag">UX Research</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card" data-category="branding" data-magnetic>
+                    <div class="project-image-container">
+                        <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1139&q=80" alt="E-commerce">
+                    </div>
+                    <div class="project-details">
+                        <h3>Fashion Retail Platform</h3>
+                        <p>An e-commerce experience for a luxury fashion brand, focused on creating a visually immersive and user-friendly platform with a streamlined checkout process.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">E-commerce</span>
+                            <span class="project-tag">Brand Identity</span>
+                            <span class="project-tag">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card" data-category="development ui-ux" data-magnetic>
+                    <div class="project-image-container">
+                        <img src="https://images.unsplash.com/photo-1593642702821-c42674e2a874?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Website">
+                    </div>
+                    <div class="project-details">
+                        <h3>Portfolio Website Redesign</h3>
+                        <p>A personal portfolio website showcasing work and skills with a clean, modern aesthetic. The project involved wireframing, UI design, and front-end development.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Development</span>
+                            <span class="project-tag">Web Design</span>
+                            <span class="project-tag">Front-End</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="new-contact">
+        <div class="container">
+            <div class="new-contact-content">
+                <div class="memoji-container">
+                    <img src="https://framerusercontent.com/images/DGJ4Gx0ogbA7MZuCQVUb98IKt1I.png" alt="Memoji" class="memoji">
+                </div>
+                <h2>Get in touch</h2>
+                <p>I'm always interested in new challenges and opportunities to design meaningful products.</p>
+                <a href="mailto:rockyhchen@gmail.com" class="contact-button" data-magnetic>Send an email</a>
+            </div>
+            <div class="social-links-footer">
+                <a href="#"><i class="fab fa-dribbble"></i></a>
+                <a href="#"><i class="fab fa-behance"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+            <div class="copyright">
+                © 2025 Rocky Chen. All rights reserved.
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- Custom Cursor Logic ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        
+        // --- Magnetic Elements Logic ---
+        const magneticElements = document.querySelectorAll('[data-magnetic]');
+        const magneticMultiplier = 0.075; // Decreased sensitivity for a less reactive feel
+
+        // Combined Mousemove event listener for both cursor and magnetism
+        window.addEventListener('mousemove', e => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.opacity = 1;
+            cursorOutline.style.opacity = 1;
+
+            const dotSize = cursorDot.offsetWidth;
+            const outlineSize = cursorOutline.offsetWidth;
+
+            cursorDot.style.transform = `translate3d(${posX - dotSize / 2}px, ${posY - dotSize / 2}px, 0)`;
+            cursorOutline.style.transform = `translate3d(${posX - outlineSize / 2}px, ${posY - outlineSize / 2}px, 0)`;
+
+            // Update magnetic elements based on cursor position
+            updateMagneticElements(posX, posY);
+        });
+
+        function updateMagneticElements(cursorX, cursorY) {
+            magneticElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const elCenterX = rect.left + rect.width / 2;
+                const elCenterY = rect.top + rect.height / 2;
+
+                // Calculate distance between element's center and cursor's position
+                const dx = cursorX - elCenterX;
+                const dy = cursorY - elCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Define a proximity radius based on element size and cursor size
+                // Using the larger of width/height for the element's radius
+                const elRadius = Math.max(rect.width, rect.height) / 2;
+                const cursorRadius = cursorOutline.offsetWidth / 2;
+                const proximityRadius = elRadius + cursorRadius + 50; // Added 50px buffer
+
+                if (distance < proximityRadius) {
+                    // Apply magnetic effect
+                    const strength = (proximityRadius - distance) / proximityRadius;
+                    const magneticX = dx * strength * magneticMultiplier;
+                    const magneticY = dy * strength * magneticMultiplier;
+                    
+                    el.style.transform = `translate(${magneticX}px, ${magneticY}px)`;
+                } else {
+                    // Reset to original position
+                    el.style.transform = 'translate(0, 0)';
+                }
+            });
+        }
+        
+        // Enhance cursor on hover
+        document.querySelectorAll('a, button, .project-card, .category-button, .about-card').forEach(el => {
+            el.addEventListener('mouseover', () => {
+                cursorOutline.style.width = '60px';
+                cursorOutline.style.height = '60px';
+                cursorOutline.style.borderColor = 'rgba(0, 153, 255, 0.5)';
+            });
+            el.addEventListener('mouseout', () => {
+                cursorOutline.style.width = '40px';
+                cursorOutline.style.height = '40px';
+                cursorOutline.style.borderColor = '#0099FF';
+            });
+        });
+
+        // --- Hero Text Animation ---
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.hero-subtitle .word').forEach((word, index) => {
+                setTimeout(() => {
+                    word.style.transform = 'translateY(0)';
+                    word.style.opacity = 1;
+                }, 100 * index + 500);
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Project Filtering Logic
+        const categoryButtons = document.querySelectorAll('.category-button');
+        const projectCards = document.querySelectorAll('.project-card');
+
+        function filterProjects(category) {
+            projectCards.forEach(card => {
+                const categories = card.getAttribute('data-category').split(' ');
+                const isMatch = (category === 'all' || categories.includes(category));
+                
+                if (isMatch) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                filterProjects(button.getAttribute('data-category'));
+            });
+        });
+
+        // Intersection Observer for scroll reveal
+        const sections = document.querySelectorAll('.section');
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+    
+    <script>
+        // Self-invoking function to encapsulate the code and avoid global conflicts
+        (function(w) {
+            let canvas, ctx;
+            let mouse = {
+                x: 0,
+                y: 0,
+                px: 0,
+                py: 0,
+                down: false
+            };
+            // The canvas width and height are handled by CSS, but the script still needs them for calculations
+            // We'll set them to a reasonable default that will be overwritten on init.
+            const canvas_width = window.innerWidth;
+            const canvas_height = window.innerHeight;
+            const resolution = 10;
+            // The radius of the effect has been doubled
+            const pen_size = 160; 
+            const num_cols = canvas_width / resolution;
+            const num_rows = canvas_height / resolution;
+            const speck_count = 10000; // Increased number of particles
+            let vec_cells = [];
+            let particles = [];
+            
+            // New variable to control the overall intensity of the effect
+            // Set to 0.0125 (1/2 of the previous 0.025)
+            const intensity_factor = 0.0125;
+
+            // Main initialization function
+            function init() {
+                canvas = document.getElementById("c");
+                ctx = canvas.getContext("2d");
+                // The canvas width and height should be set based on the window size to cover the whole page.
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                for (let i = 0; i < speck_count; i++) {
+                    particles.push(new particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                }
+
+                for (let col = 0; col < Math.ceil(canvas.width / resolution); col++) {
+                    vec_cells[col] = [];
+                    for (let row = 0; row < Math.ceil(canvas.height / resolution); row++) {
+                        const cell_data = new cell(col * resolution, row * resolution, resolution);
+                        vec_cells[col][row] = cell_data;
+                        vec_cells[col][row].col = col;
+                        vec_cells[col][row].row = row;
+                    }
+                }
+
+                for (let col = 0; col < Math.ceil(canvas.width / resolution); col++) {
+                    for (let row = 0; row < Math.ceil(canvas.height / resolution); row++) {
+                        const cell_data = vec_cells[col][row];
+                        const row_up = (row - 1 >= 0) ? row - 1 : Math.ceil(canvas.height / resolution) - 1;
+                        const col_left = (col - 1 >= 0) ? col - 1 : Math.ceil(canvas.width / resolution) - 1;
+                        const col_right = (col + 1 < Math.ceil(canvas.width / resolution)) ? col + 1 : 0;
+
+                        const up = vec_cells[col][row_up];
+                        const left = vec_cells[col_left][row];
+                        const up_left = vec_cells[col_left][row_up];
+                        const up_right = vec_cells[col_right][row_up];
+
+                        cell_data.up = up;
+                        cell_data.left = left;
+                        cell_data.up_left = up_left;
+                        cell_data.up_right = up_right;
+
+                        up.down = vec_cells[col][row];
+                        left.right = vec_cells[col][row];
+                        up_left.down_right = vec_cells[col][row];
+                        up_right.down_left = vec_cells[col][row];
+                    }
+                }
+
+                // Removed mouse down/up handlers for continuous movement
+                w.addEventListener("touchstart", mouse_down_handler); // Kept for touch interaction
+                w.addEventListener("touchend", touch_end_handler); // Kept for touch interaction
+                w.addEventListener("mousemove", mouse_move_handler);
+                w.addEventListener("touchmove", touch_move_handler);
+
+                w.onload = draw;
+            }
+
+            function update_particle() {
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    if (p.x >= 0 && p.x < canvas.width && p.y >= 0 && p.y < canvas.height) {
+                        const col = parseInt(p.x / resolution);
+                        const row = parseInt(p.y / resolution);
+                        const cell_data = vec_cells[col][row];
+
+                        const ax = (p.x % resolution) / resolution;
+                        const ay = (p.y % resolution) / resolution;
+
+                        p.xv += (1 - ax) * cell_data.xv * 0.05;
+                        p.yv += (1 - ay) * cell_data.yv * 0.05;
+
+                        p.xv += ax * cell_data.right.xv * 0.05;
+                        p.yv += ax * cell_data.right.yv * 0.05;
+
+                        p.xv += ay * cell_data.down.xv * 0.05;
+                        p.yv += ay * cell_data.down.yv * 0.05;
+
+                        p.x += p.xv;
+                        p.y += p.yv;
+
+                        const dx = p.px - p.x;
+                        const dy = p.py - p.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const limit = Math.random() * 0.5;
+
+                        // Only draw the particle if it has moved beyond the limit
+                        if (dist > limit) {
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p.px, p.py);
+                            ctx.stroke();
+                        }
+
+                        p.px = p.x;
+                        p.py = p.y;
+                    } else {
+                        p.x = p.px = Math.random() * canvas.width;
+                        p.y = p.py = Math.random() * canvas.height;
+                        p.xv = 0;
+                        p.yv = 0;
+                    }
+
+                    p.xv *= 0.5;
+                    p.yv *= 0.5;
+                }
+            }
+
+            function draw() {
+                const mouse_xv = mouse.x - mouse.px;
+                const mouse_yv = mouse.y - mouse.py;
+
+                for (let i = 0; i < vec_cells.length; i++) {
+                    const cell_datas = vec_cells[i];
+                    for (let j = 0; j < cell_datas.length; j++) {
+                        const cell_data = cell_datas[j];
+                        // Velocity is now updated continuously on cursor movement
+                        change_cell_velocity(cell_data, mouse_xv, mouse_yv, pen_size);
+                        update_pressure(cell_data);
+                    }
+                }
+
+                // Create the fading effect with a semi-transparent black overlay
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Change the stroke color to the requested hex code
+                ctx.strokeStyle = "#7DF9FF";
+                update_particle();
+
+                for (let i = 0; i < vec_cells.length; i++) {
+                    const cell_datas = vec_cells[i];
+                    for (let j = 0; j < cell_datas.length; j++) {
+                        const cell_data = cell_datas[j];
+                        update_velocity(cell_data);
+                    }
+                }
+
+                mouse.px = mouse.x;
+                mouse.py = mouse.y;
+
+                requestAnimationFrame(draw);
+            }
+
+            function change_cell_velocity(cell_data, mvelX, mvelY, pen_size) {
+                const dx = cell_data.x - mouse.x;
+                const dy = cell_data.y - mouse.y;
+                let dist = Math.sqrt(dy * dy + dx * dx);
+
+                if (dist < pen_size) {
+                    if (dist < 4) {
+                        dist = pen_size;
+                    }
+                    const power = pen_size / dist;
+                    // Apply the new intensity factor
+                    cell_data.xv += mvelX * power * intensity_factor;
+                    cell_data.yv += mvelY * power * intensity_factor;
+                }
+            }
+
+            function update_pressure(cell_data) {
+                const pressure_x = (
+                    cell_data.up_left.xv * 0.5 + cell_data.left.xv + cell_data.down_left.xv * 0.5 -
+                    cell_data.up_right.xv * 0.5 - cell_data.right.xv - cell_data.down_right.xv * 0.5
+                );
+                const pressure_y = (
+                    cell_data.up_left.yv * 0.5 + cell_data.up.yv + cell_data.up_right.yv * 0.5 -
+                    cell_data.down_left.yv * 0.5 - cell_data.down.yv - cell_data.down_right.yv * 0.5
+                );
+                cell_data.pressure = (pressure_x + pressure_y) * 0.25;
+            }
+
+            function update_velocity(cell_data) {
+                cell_data.xv += (
+                    cell_data.up_left.pressure * 0.5 + cell_data.left.pressure + cell_data.down_left.pressure * 0.5 -
+                    cell_data.up_right.pressure * 0.5 - cell_data.right.pressure - cell_data.down_right.pressure * 0.5
+                ) * 0.25;
+                cell_data.yv += (
+                    cell_data.up_left.pressure * 0.5 + cell_data.up.pressure + cell_data.up_right.pressure * 0.5 -
+                    cell_data.down_left.pressure * 0.5 - cell_data.down.pressure - cell_data.down_right.pressure * 0.5
+                ) * 0.25;
+                cell_data.xv *= 0.99;
+                cell_data.yv *= 0.99;
+            }
+
+            function cell(x, y, res) {
+                this.x = x;
+                this.y = y;
+                this.r = res;
+                this.col = 0;
+                this.row = 0;
+                this.xv = 0;
+                this.yv = 0;
+                this.pressure = 0;
+            }
+
+            function particle(x, y) {
+                this.x = this.px = x;
+                this.y = this.py = y;
+                this.xv = this.yv = 0;
+            }
+
+            function mouse_down_handler(e) {
+                e.preventDefault();
+                mouse.down = true;
+            }
+
+            function mouse_up_handler() {
+                mouse.down = false;
+            }
+
+            function touch_end_handler(e) {
+                if (!e.touches) mouse.down = false;
+            }
+
+            function mouse_move_handler(e) {
+                mouse.px = mouse.x;
+                mouse.py = mouse.y;
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            }
+
+            function touch_move_handler(e) {
+                mouse.px = mouse.x;
+                mouse.py = mouse.y;
+                mouse.x = e.touches[0].pageX;
+                mouse.y = e.touches[0].pageY;
+            }
+
+            w.Fluid = {
+                initialize: init
+            };
+        })(window);
+
+        window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+        Fluid.initialize();
+    </script>
+</body>
+</html>
